@@ -34,7 +34,7 @@ const StreakCard: React.FC<StreakCardProps> = ({ title, icon, streak, gradientFr
 };
 
 const Streaks: React.FC = () => {
-  const { logs } = useApp();
+  const { logs, refreshTrigger } = useApp();
   const [dsaStreak, setDsaStreak] = useState(0);
   const [meditationStreak, setMeditationStreak] = useState(0);
   const [learningStreak, setLearningStreak] = useState(0);
@@ -45,14 +45,19 @@ const Streaks: React.FC = () => {
     // Include both keys and a hash of the content to detect updates
     const logEntries = Object.entries(logs).sort(([a], [b]) => a.localeCompare(b));
     return JSON.stringify(logEntries);
-  }, [logs]);
+  }, [logs, refreshTrigger]);
 
   // Recalculate all streaks whenever logs change
   useEffect(() => {
-    setDsaStreak(getCurrentStreak(logs));
-    setMeditationStreak(getMeditationStreak(logs));
-    setLearningStreak(getLearningStreak(logs));
-    setExerciseStreak(getExerciseStreak(logs));
+    const newDsaStreak = getCurrentStreak(logs);
+    const newMeditationStreak = getMeditationStreak(logs);
+    const newLearningStreak = getLearningStreak(logs);
+    const newExerciseStreak = getExerciseStreak(logs);
+    
+    setDsaStreak(newDsaStreak);
+    setMeditationStreak(newMeditationStreak);
+    setLearningStreak(newLearningStreak);
+    setExerciseStreak(newExerciseStreak);
   }, [logsKey, logs]);
 
   const totalStreak = dsaStreak + meditationStreak + learningStreak + exerciseStreak;

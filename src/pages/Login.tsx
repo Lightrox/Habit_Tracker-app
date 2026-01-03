@@ -13,21 +13,16 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    if (!email || !email.trim()) {
-      setError('Please enter your email address');
-      return;
-    }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) {
+      setError('Please enter your email address');
       return;
     }
 
     setLoading(true);
 
-    const result = await login(email.trim(), password);
+    const result = await login(trimmedEmail, password);
     if (result.error) {
       setError(result.error);
       setLoading(false);
@@ -51,16 +46,15 @@ const Login: React.FC = () => {
             <div className="bg-red-600 text-white p-3 rounded mb-4">{error}</div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Email
               </label>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
                 className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your email"
               />
@@ -74,7 +68,6 @@ const Login: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
                 className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••••"
               />

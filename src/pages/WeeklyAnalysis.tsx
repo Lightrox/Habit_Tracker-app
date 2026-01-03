@@ -20,11 +20,12 @@ const WeeklyAnalysis: React.FC = () => {
   const [, setLoading] = useState(true);
 
   const getWeekNumber = (date: Date): number => {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    // Match API's week calculation (Sunday as first day)
+    const year = date.getFullYear();
+    const jan1 = new Date(year, 0, 1);
+    const daysSinceJan1 = Math.floor((date.getTime() - jan1.getTime()) / (1000 * 60 * 60 * 24));
+    const weekNumber = Math.ceil((daysSinceJan1 + jan1.getDay() + 1) / 7);
+    return weekNumber;
   };
 
   useEffect(() => {
@@ -86,11 +87,14 @@ const WeeklyAnalysis: React.FC = () => {
   };
 
   const weekStart = useMemo(() => {
-    const date = new Date(selectedDate);
-    const day = date.getDay();
-    const diff = date.getDate() - day;
-    const start = new Date(date);
-    start.setDate(diff);
+    // Calculate week start to match API calculation (Sunday as first day)
+    const year = selectedDate.getFullYear();
+    const weekNumber = getWeekNumber(selectedDate);
+    const jan1 = new Date(year, 0, 1);
+    const daysOffset = (weekNumber - 1) * 7;
+    const start = new Date(jan1);
+    start.setDate(jan1.getDate() + daysOffset - jan1.getDay());
+    start.setHours(0, 0, 0, 0);
     return start;
   }, [selectedDate]);
 
@@ -112,14 +116,16 @@ const WeeklyAnalysis: React.FC = () => {
 
   const dsaProblemsData = useMemo(() => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    // Generate data for all 7 days of the week (Sunday to Saturday)
     const data = days.map((day, index) => {
       const date = new Date(weekStart);
       date.setDate(weekStart.getDate() + index);
       const dateStr = date.toISOString().split('T')[0];
       const log = weekLogs.find((l) => l.date === dateStr);
+      const problems = log && log.dsa.done && log.dsa.type === 'new' ? log.dsa.count : 0;
       return {
         day,
-        problems: log && log.dsa.done && log.dsa.type === 'new' ? log.dsa.count : 0,
+        problems,
       };
     });
     return data;
@@ -222,7 +228,7 @@ const WeeklyAnalysis: React.FC = () => {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* DSA Problems Bar Chart */}
-        <div className="bg-gray-800 rounded-lg p-6">
+        <div key={`dsa-chart-${refreshTrigger}-${weekLogs.length}`} className="bg-gray-800 rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4 text-white">DSA Problems per Day</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={dsaProblemsData}>
@@ -239,7 +245,7 @@ const WeeklyAnalysis: React.FC = () => {
         </div>
 
         {/* Study Time Line Chart */}
-        <div className="bg-gray-800 rounded-lg p-6">
+        <div key={`study-chart-${refreshTrigger}-${weekLogs.length}`} className="bg-gray-800 rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4 text-white">Study Time per Day</h2>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={studyTimeData}>
@@ -257,7 +263,7 @@ const WeeklyAnalysis: React.FC = () => {
       </div>
 
       {/* Activity Distribution Pie Chart */}
-      <div className="bg-gray-800 rounded-lg p-6">
+      <div key={`pie-chart-${refreshTrigger}-${weekLogs.length}`} className="bg-gray-800 rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-4 text-white">Activity Distribution</h2>
         {activityDistribution.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>

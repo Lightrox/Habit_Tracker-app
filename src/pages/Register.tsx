@@ -15,29 +15,13 @@ const Register: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    if (!email || !email.trim()) {
-      setError('Please enter your email address');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
     setLoading(true);
-    const result = await register(email.trim(), password);
+    const result = await register(String(email), String(password));
     if (result.error) {
       setError(result.error);
       setLoading(false);
@@ -61,16 +45,15 @@ const Register: React.FC = () => {
             <div className="bg-red-600 text-white p-3 rounded mb-4">{error}</div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Email
               </label>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
                 className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your email"
               />
@@ -84,8 +67,6 @@ const Register: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
                 className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••••"
               />
@@ -99,7 +80,6 @@ const Register: React.FC = () => {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                required
                 className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••••"
               />

@@ -184,12 +184,15 @@ export const api = {
       weekEnd.setDate(weekStart.getDate() + 6);
       weekEnd.setHours(23, 59, 59, 999);
 
+      const weekStartStr = weekStart.toISOString().split('T')[0];
+      const weekEndStr = weekEnd.toISOString().split('T')[0];
+
       const { data, error } = await supabase
         .from('daily_logs')
         .select('*')
         .eq('user_id', user.id)
-        .gte('date', weekStart.toISOString().split('T')[0])
-        .lte('date', weekEnd.toISOString().split('T')[0])
+        .gte('date', weekStartStr)
+        .lte('date', weekEndStr)
         .order('date', { ascending: true });
 
       if (error) {
@@ -256,12 +259,15 @@ export const api = {
       const endDate = new Date(year, month, 0);
       endDate.setHours(23, 59, 59, 999);
 
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const endDateStr = endDate.toISOString().split('T')[0];
+
       const { data, error } = await supabase
         .from('daily_logs')
         .select('*')
         .eq('user_id', user.id)
-        .gte('date', startDate.toISOString().split('T')[0])
-        .lte('date', endDate.toISOString().split('T')[0])
+        .gte('date', startDateStr)
+        .lte('date', endDateStr)
         .order('date', { ascending: true });
 
       if (error) {

@@ -47,14 +47,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     password: string
   ): Promise<{ error?: string }> => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
+      if (!email || !password) {
+        return { error: 'Email and password are required' };
+      }
+
+      // Normalize email: trim, lowercase, remove any extra spaces
+      const normalizedEmail = email.trim().toLowerCase().replace(/\s+/g, '');
+      
+      if (!normalizedEmail.includes('@') || !normalizedEmail.includes('.')) {
+        return { error: 'Please enter a valid email address' };
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
         password,
       });
 
       if (error) {
+        console.error('Supabase login error:', error);
         return { error: error.message };
       }
+
+      if (!data.session) {
+        return { error: 'Login failed. Please check your credentials.' };
+      }
+
       return {};
     } catch (error) {
       console.error('Login error:', error);
@@ -67,14 +84,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     password: string
   ): Promise<{ error?: string }> => {
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
+      if (typeof email !== 'string' || typeof password !== 'string') {
+        return { error: 'Email and password must be strings' };
+      }
+
+      const cleanEmail = email.trim().toLowerCase();
+
+      if (!cleanEmail) {
+        return { error: 'Email is required' };
+      }
+
+      if (password.length < 6) {
+        return { error: 'Password must be at least 6 characters' };
+      }
+
+      console.log(
+        "SIGNUP EMAIL:",
+        JSON.stringify(cleanEmail),
+        "length:",
+        cleanEmail.length
+      );
+
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
         password,
       });
 
       if (error) {
-        return { error: error.message };
+        throw error;
       }
+
       return {};
     } catch (error) {
       console.error('Registration error:', error);

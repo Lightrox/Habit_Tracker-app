@@ -1,26 +1,24 @@
 import { DailyLog } from '../types';
 
 export const getCurrentStreak = (logs: Record<string, DailyLog>): number => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Get all log dates and sort them in descending order (most recent first)
+  const logDates = Object.keys(logs)
+    .filter(date => logs[date].dsa.done)
+    .map(date => new Date(date))
+    .sort((a, b) => b.getTime() - a.getTime());
   
-  let streak = 0;
-  let currentDate = new Date(today);
-  
-  // Check today first - if DSA is not done today, streak is 0
-  const todayStr = currentDate.toISOString().split('T')[0];
-  const todayLog = logs[todayStr];
-  
-  // If today's DSA is not done, return 0 immediately
-  if (!todayLog || !todayLog.dsa.done) {
+  if (logDates.length === 0) {
     return 0;
   }
   
-  // Today's DSA is done, count it and continue backwards
-  streak++;
-  currentDate.setDate(currentDate.getDate() - 1);
+  // Start from the most recent log date
+  const mostRecentDate = logDates[0];
+  mostRecentDate.setHours(0, 0, 0, 0);
   
-  // Count backwards through consecutive days
+  let streak = 0;
+  let currentDate = new Date(mostRecentDate);
+  
+  // Count backwards from the most recent log date
   while (true) {
     const dateStr = currentDate.toISOString().split('T')[0];
     const log = logs[dateStr];
@@ -38,22 +36,24 @@ export const getCurrentStreak = (logs: Record<string, DailyLog>): number => {
 };
 
 export const getMeditationStreak = (logs: Record<string, DailyLog>): number => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Get all log dates with meditation done and sort them in descending order
+  const logDates = Object.keys(logs)
+    .filter(date => logs[date].meditation.done)
+    .map(date => new Date(date))
+    .sort((a, b) => b.getTime() - a.getTime());
   
-  let streak = 0;
-  let currentDate = new Date(today);
-  
-  const todayStr = currentDate.toISOString().split('T')[0];
-  const todayLog = logs[todayStr];
-  
-  if (!todayLog || !todayLog.meditation.done) {
+  if (logDates.length === 0) {
     return 0;
   }
   
-  streak++;
-  currentDate.setDate(currentDate.getDate() - 1);
+  // Start from the most recent log date
+  const mostRecentDate = logDates[0];
+  mostRecentDate.setHours(0, 0, 0, 0);
   
+  let streak = 0;
+  let currentDate = new Date(mostRecentDate);
+  
+  // Count backwards from the most recent log date
   while (true) {
     const dateStr = currentDate.toISOString().split('T')[0];
     const log = logs[dateStr];
@@ -70,23 +70,27 @@ export const getMeditationStreak = (logs: Record<string, DailyLog>): number => {
 };
 
 export const getLearningStreak = (logs: Record<string, DailyLog>): number => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Get all log dates with learning activity and sort them in descending order
+  const logDates = Object.keys(logs)
+    .filter(date => {
+      const log = logs[date];
+      return log.learning.notes.trim() !== '' || log.learning.time > 0;
+    })
+    .map(date => new Date(date))
+    .sort((a, b) => b.getTime() - a.getTime());
   
-  let streak = 0;
-  let currentDate = new Date(today);
-  
-  const todayStr = currentDate.toISOString().split('T')[0];
-  const todayLog = logs[todayStr];
-  
-  // Learning is considered done if there are notes or time spent
-  if (!todayLog || (todayLog.learning.notes.trim() === '' && todayLog.learning.time === 0)) {
+  if (logDates.length === 0) {
     return 0;
   }
   
-  streak++;
-  currentDate.setDate(currentDate.getDate() - 1);
+  // Start from the most recent log date
+  const mostRecentDate = logDates[0];
+  mostRecentDate.setHours(0, 0, 0, 0);
   
+  let streak = 0;
+  let currentDate = new Date(mostRecentDate);
+  
+  // Count backwards from the most recent log date
   while (true) {
     const dateStr = currentDate.toISOString().split('T')[0];
     const log = logs[dateStr];
@@ -103,22 +107,24 @@ export const getLearningStreak = (logs: Record<string, DailyLog>): number => {
 };
 
 export const getExerciseStreak = (logs: Record<string, DailyLog>): number => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Get all log dates with exercise done and sort them in descending order
+  const logDates = Object.keys(logs)
+    .filter(date => logs[date].gym.done)
+    .map(date => new Date(date))
+    .sort((a, b) => b.getTime() - a.getTime());
   
-  let streak = 0;
-  let currentDate = new Date(today);
-  
-  const todayStr = currentDate.toISOString().split('T')[0];
-  const todayLog = logs[todayStr];
-  
-  if (!todayLog || !todayLog.gym.done) {
+  if (logDates.length === 0) {
     return 0;
   }
   
-  streak++;
-  currentDate.setDate(currentDate.getDate() - 1);
+  // Start from the most recent log date
+  const mostRecentDate = logDates[0];
+  mostRecentDate.setHours(0, 0, 0, 0);
   
+  let streak = 0;
+  let currentDate = new Date(mostRecentDate);
+  
+  // Count backwards from the most recent log date
   while (true) {
     const dateStr = currentDate.toISOString().split('T')[0];
     const log = logs[dateStr];
