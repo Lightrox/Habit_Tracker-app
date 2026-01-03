@@ -1,6 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  console.log('[api/health] Handler invoked', {
+    method: req.method,
+    url: req.url,
+    timestamp: new Date().toISOString(),
+  });
+
   try {
     // Check environment variables
     const hasDatabaseUrl = !!process.env.DATABASE_URL;

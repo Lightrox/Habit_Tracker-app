@@ -68,12 +68,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('[api/auth/register] Validation error:', error.errors);
       return res.status(400).json({ error: error.errors[0].message });
     }
     
     // Log full error for debugging
-    console.error('Registration error:', error);
-    console.error('Error details:', {
+    console.error('[api/auth/register] Internal error:', error);
+    console.error('[api/auth/register] Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       DATABASE_URL: process.env.DATABASE_URL ? 'Set' : 'Missing',
@@ -89,7 +90,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
     
-    return res.status(500).json({ error: 'Internal server error' });
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+    });
   }
 }
 

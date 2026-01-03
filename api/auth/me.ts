@@ -24,10 +24,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    return res.json({ user: dbUser });
+    return res.status(200).json({ user: dbUser });
   } catch (error) {
-    console.error('Me error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('[api/auth/me] Internal error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+    });
   }
 }
 

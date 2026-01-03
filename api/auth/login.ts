@@ -50,10 +50,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('[api/auth/login] Validation error:', error.errors);
       return res.status(400).json({ error: error.errors[0].message });
     }
-    console.error('Login error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('[api/auth/login] Internal error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+    });
   }
 }
 
