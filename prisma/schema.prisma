@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  createdAt DateTime   @default(now())
+  logs      DailyLog[]
+
+  @@map("users")
+}
+
+model DailyLog {
+  id            String   @id @default(uuid())
+  userId        String
+  date          DateTime @db.Date
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  dsaDone       Boolean  @default(false)
+  dsaType       String?  @db.VarChar(20)
+  dsaCount      Int      @default(0)
+  dsaTime       Int      @default(0)
+
+  meditationDone Boolean @default(false)
+  meditationTime Int     @default(0)
+
+  gymDone       Boolean  @default(false)
+  gymType       String?  @db.VarChar(20)
+  gymTime       Int      @default(0)
+
+  learningNotes String  @default("")
+  learningTime  Int     @default(0)
+
+  projectDone   Boolean  @default(false)
+  projectName   String   @default("")
+  projectNotes  String   @default("")
+  projectTime   Int      @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@map("daily_logs")
+}
+
