@@ -15,6 +15,17 @@ const Register: React.FC = () => {
     e.preventDefault();
     setError('');
 
+    if (!email || !email.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
       return;
@@ -26,7 +37,7 @@ const Register: React.FC = () => {
     }
 
     setLoading(true);
-    const result = await register(email, password);
+    const result = await register(email.trim(), password);
     if (result.error) {
       setError(result.error);
       setLoading(false);
@@ -61,7 +72,7 @@ const Register: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="your@email.com"
+                placeholder="Enter your email"
               />
             </div>
 
@@ -116,3 +127,4 @@ const Register: React.FC = () => {
 };
 
 export default Register;
+
