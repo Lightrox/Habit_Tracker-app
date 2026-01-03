@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { prisma } from '../../lib/prisma';
-import { generateToken } from '../../lib/auth';
-import { setCookie } from '../../lib/cookies';
+import { prisma } from '../../lib/prisma.js';
+import { generateToken } from '../../lib/auth.js';
+import { setCookie } from '../../lib/cookies.js';
 
 const loginSchema = z.object({
   email: z.string().email(),

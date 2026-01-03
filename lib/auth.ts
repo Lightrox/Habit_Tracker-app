@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getCookie } from './cookies';
-import { prisma } from './prisma';
+import { getCookie } from './cookies.js';
+import { prisma } from './prisma.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 

@@ -13,7 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (hasDatabaseUrl) {
       try {
         // Dynamic import to avoid crashes if Prisma isn't set up
-        const { prisma } = await import('../lib/prisma');
+        const { prisma } = await import('../lib/prisma.js');
         // Simple query to test connection
         await prisma.$queryRaw`SELECT 1 as test`;
         dbConnected = true;
