@@ -49,29 +49,29 @@ const DailyTracking: React.FC = () => {
     return {
       date: new Date(dbLog.date).toISOString().split('T')[0],
       dsa: {
-        done: dbLog.dsaDone || false,
-        type: (dbLog.dsaType?.toLowerCase() || 'new') as 'new' | 'revision',
-        count: dbLog.dsaCount || 0,
-        time: dbLog.dsaTime || 0,
+        done: dbLog.dsa_done || false,
+        type: (dbLog.dsa_type?.toLowerCase() || 'new') as 'new' | 'revision',
+        count: dbLog.dsa_count || 0,
+        time: dbLog.dsa_time || 0,
       },
       meditation: {
-        done: dbLog.meditationDone || false,
-        time: dbLog.meditationTime || 0,
+        done: dbLog.meditation_done || false,
+        time: dbLog.meditation_time || 0,
       },
       gym: {
-        done: dbLog.gymDone || false,
-        type: (dbLog.gymType?.toLowerCase().replace('_', '-') || 'dumbbells') as 'dumbbells' | 'push-pull' | 'shoulders',
-        time: dbLog.gymTime || 0,
+        done: dbLog.gym_done || false,
+        type: (dbLog.gym_type?.toLowerCase().replace('_', '-') || 'dumbbells') as 'dumbbells' | 'push-pull' | 'shoulders',
+        time: dbLog.gym_time || 0,
       },
       learning: {
-        notes: dbLog.learningNotes || '',
-        time: dbLog.learningTime || 0,
+        notes: dbLog.learning_notes || '',
+        time: dbLog.learning_time || 0,
       },
       project: {
-        done: dbLog.projectDone || false,
-        name: dbLog.projectName || '',
-        notes: dbLog.projectNotes || '',
-        time: dbLog.projectTime || 0,
+        done: dbLog.project_done || false,
+        name: dbLog.project_name || '',
+        notes: dbLog.project_notes || '',
+        time: dbLog.project_time || 0,
       },
     };
   };

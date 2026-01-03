@@ -1,10 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { api } from '../utils/api';
-
-interface User {
-  id: string;
-  email: string;
-}
+import { supabase } from '../lib/supabase';
+import type { User } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
@@ -25,13 +21,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const checkAuth = async () => {
     try {
-      const response = await api.getMe();
-      if (response.data) {
-        setUser(response.data.user);
-      } else {
-        setUser(null);
-      }
-    } catch {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+    } catch (error) {
+      console.error('Auth check error:', error);
       setUser(null);
     } finally {
       setLoading(false);
@@ -40,6 +33,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (
@@ -47,18 +47,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     password: string
   ): Promise<{ error?: string }> => {
     try {
-      const response = await api.login(email, password);
-      if (response.data) {
-        setUser(response.data.user);
-        return {};
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        return { error: error.message };
       }
-      // Check for 404 - means API routes aren't being served
-      if (response.error && response.error.includes('404')) {
-        return { 
-          error: 'API routes not found. Make sure you\'re using "npm run dev:vercel" (not "npm run dev")' 
-        };
-      }
-      return { error: response.error || 'Login failed' };
+      return {};
     } catch (error) {
       console.error('Login error:', error);
       return { error: error instanceof Error ? error.message : 'Login failed' };
@@ -69,16 +66,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     email: string,
     password: string
   ): Promise<{ error?: string }> => {
-    const response = await api.register(email, password);
-    if (response.data) {
-      setUser(response.data.user);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        return { error: error.message };
+      }
       return {};
+    } catch (error) {
+      console.error('Registration error:', error);
+      return { error: error instanceof Error ? error.message : 'Registration failed' };
     }
-    return { error: response.error || 'Registration failed' };
   };
 
   const logout = async () => {
-    await api.logout();
+    await supabase.auth.signOut();
     setUser(null);
   };
 
@@ -98,4 +103,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
