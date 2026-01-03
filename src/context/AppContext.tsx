@@ -5,7 +5,7 @@ import { api } from '../utils/api';
 interface AppContextType {
   logs: Record<string, DailyLog>;
   saveLog: (log: DailyLog) => Promise<void>;
-  getLog: (date: string) => Promise<DailyLog | null>;
+  getLog: (date: string, forceRefresh?: boolean) => Promise<DailyLog | null>;
   refreshLogs: () => void;
   refreshTrigger: number;
 }
@@ -50,11 +50,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const getLog = async (date: string): Promise<DailyLog | null> => {
-    if (logs[date]) {
+  const getLog = async (date: string, forceRefresh = false): Promise<DailyLog | null> => {
+    // If we have it in cache and not forcing refresh, return cached
+    if (logs[date] && !forceRefresh) {
       return logs[date];
     }
 
+    // Always fetch from API to ensure fresh data
     const response = await api.getLogByDate(date);
     if (response.data?.log) {
       const dailyLog = convertDbLogToDailyLog(response.data.log);

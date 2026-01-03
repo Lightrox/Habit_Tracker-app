@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { DailyLog, DEFAULT_DAILY_LOG, DSAType, GymType } from '../types';
 import { useApp } from '../context/AppContext';
+import { api } from '../utils/api';
 
 const TIME_OPTIONS = [
   { value: 30, label: '30 min' },
@@ -37,30 +38,69 @@ const GYM_TIME_OPTIONS = [
 ];
 
 const DailyTracking: React.FC = () => {
-  const { saveLog, getLog } = useApp();
+  const { saveLog, getLog, logs } = useApp();
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [formData, setFormData] = useState<DailyLog>(DEFAULT_DAILY_LOG);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  // Helper function to convert DB log to DailyLog format
+  const convertDbLogToDailyLog = (dbLog: any): DailyLog => {
+    return {
+      date: new Date(dbLog.date).toISOString().split('T')[0],
+      dsa: {
+        done: dbLog.dsaDone || false,
+        type: (dbLog.dsaType?.toLowerCase() || 'new') as 'new' | 'revision',
+        count: dbLog.dsaCount || 0,
+        time: dbLog.dsaTime || 0,
+      },
+      meditation: {
+        done: dbLog.meditationDone || false,
+        time: dbLog.meditationTime || 0,
+      },
+      gym: {
+        done: dbLog.gymDone || false,
+        type: (dbLog.gymType?.toLowerCase().replace('_', '-') || 'dumbbells') as 'dumbbells' | 'push-pull' | 'shoulders',
+        time: dbLog.gymTime || 0,
+      },
+      learning: {
+        notes: dbLog.learningNotes || '',
+        time: dbLog.learningTime || 0,
+      },
+      project: {
+        done: dbLog.projectDone || false,
+        name: dbLog.projectName || '',
+        notes: dbLog.projectNotes || '',
+        time: dbLog.projectTime || 0,
+      },
+    };
+  };
+
+  // Load data when selectedDate changes - always fetch fresh from API
   useEffect(() => {
-    const loadToday = async () => {
-      const today = new Date().toISOString().split('T')[0];
-      const existing = await getLog(today);
+    const loadDateData = async () => {
+      setLoading(true);
+      // Always fetch fresh from API when date changes (force refresh to bypass cache)
+      const existing = await getLog(selectedDate, true);
       if (existing) {
         setFormData(existing);
       } else {
-        setFormData({ ...DEFAULT_DAILY_LOG, date: today });
+        setFormData({ ...DEFAULT_DAILY_LOG, date: selectedDate });
       }
+      setLoading(false);
     };
-    loadToday();
-  }, [getLog]);
+    loadDateData();
+  }, [selectedDate, getLog]);
 
-  const handleDateChange = async (date: string) => {
-    const existing = await getLog(date);
-    if (existing) {
-      setFormData(existing);
-    } else {
-      setFormData({ ...DEFAULT_DAILY_LOG, date });
+  // Also update when logs change (in case data was saved)
+  useEffect(() => {
+    if (logs[selectedDate]) {
+      setFormData(logs[selectedDate]);
     }
+  }, [logs, selectedDate]);
+
+  const handleDateChange = (date: string) => {
+    setSelectedDate(date);
   };
 
   const handleSave = async () => {
@@ -76,7 +116,9 @@ const DailyTracking: React.FC = () => {
       return;
     }
 
-    await saveLog(formData);
+    // Ensure date is set correctly
+    const logToSave = { ...formData, date: selectedDate };
+    await saveLog(logToSave);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -127,7 +169,7 @@ const DailyTracking: React.FC = () => {
         </label>
         <input
           type="date"
-          value={formData.date}
+          value={selectedDate}
           onChange={(e) => handleDateChange(e.target.value)}
           className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
