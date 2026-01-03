@@ -27,15 +27,29 @@ class ApiClient {
         },
       });
 
-      const data = await response.json();
+      // Handle non-JSON responses
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        return { error: text || `HTTP ${response.status}: ${response.statusText}` };
+      }
 
       if (!response.ok) {
-        return { error: data.error || 'Request failed' };
+        // 401 (Unauthorized) is expected for unauthenticated requests - don't treat as error
+        if (response.status === 401) {
+          return { error: undefined }; // Return no error, just no data
+        }
+        return { error: data.error || `Request failed: ${response.status} ${response.statusText}` };
       }
 
       return { data };
     } catch (error) {
-      return { error: 'Network error' };
+      console.error('API request error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Network error';
+      return { error: errorMessage };
     }
   }
 
