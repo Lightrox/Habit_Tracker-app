@@ -2,8 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { api } from '../utils/api';
 import { DailyLog } from '../types';
+import { useApp } from '../context/AppContext';
 
 const MonthlyReport: React.FC = () => {
+  const { refreshTrigger } = useApp();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [monthLogs, setMonthLogs] = useState<DailyLog[]>([]);
   const [heatmapData, setHeatmapData] = useState<Array<{ day: number; intensity: number }>>([]);
@@ -34,7 +36,7 @@ const MonthlyReport: React.FC = () => {
       setLoading(false);
     };
     fetchMonthData();
-  }, [year, month]);
+  }, [year, month, refreshTrigger]);
 
   const convertDbLog = (dbLog: any): DailyLog => {
     return {

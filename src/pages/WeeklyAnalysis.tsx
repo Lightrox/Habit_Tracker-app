@@ -2,10 +2,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
 import { api } from '../utils/api';
 import { DailyLog } from '../types';
+import { useApp } from '../context/AppContext';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 const WeeklyAnalysis: React.FC = () => {
+  const { refreshTrigger } = useApp();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekLogs, setWeekLogs] = useState<DailyLog[]>([]);
   const [summary, setSummary] = useState({
@@ -46,7 +48,7 @@ const WeeklyAnalysis: React.FC = () => {
       setLoading(false);
     };
     fetchWeekData();
-  }, [selectedDate]);
+  }, [selectedDate, refreshTrigger]);
 
   const convertDbLog = (dbLog: any): DailyLog => {
     return {

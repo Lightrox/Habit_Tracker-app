@@ -7,15 +7,18 @@ interface AppContextType {
   saveLog: (log: DailyLog) => Promise<void>;
   getLog: (date: string) => Promise<DailyLog | null>;
   refreshLogs: () => void;
+  refreshTrigger: number;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [logs, setLogs] = useState<Record<string, DailyLog>>({});
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const refreshLogs = () => {
-    // Logs are fetched on-demand now
+    // Trigger a refresh by incrementing the counter
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   const saveLog = async (log: DailyLog) => {
@@ -42,6 +45,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (response.data) {
       const updatedLog = convertDbLogToDailyLog(response.data.log);
       setLogs((prev) => ({ ...prev, [log.date]: updatedLog }));
+      // Trigger refresh for other components
+      refreshLogs();
     }
   };
 
@@ -60,7 +65,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   return (
-    <AppContext.Provider value={{ logs, saveLog, getLog, refreshLogs }}>
+    <AppContext.Provider value={{ logs, saveLog, getLog, refreshLogs, refreshTrigger }}>
       {children}
     </AppContext.Provider>
   );

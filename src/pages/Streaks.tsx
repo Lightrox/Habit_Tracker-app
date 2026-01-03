@@ -40,9 +40,11 @@ const Streaks: React.FC = () => {
   const [learningStreak, setLearningStreak] = useState(0);
   const [exerciseStreak, setExerciseStreak] = useState(0);
 
-  // Create a stable key from logs to detect changes
+  // Create a stable key from logs to detect changes - include content, not just keys
   const logsKey = useMemo(() => {
-    return JSON.stringify(Object.keys(logs).sort());
+    // Include both keys and a hash of the content to detect updates
+    const logEntries = Object.entries(logs).sort(([a], [b]) => a.localeCompare(b));
+    return JSON.stringify(logEntries);
   }, [logs]);
 
   // Recalculate all streaks whenever logs change
