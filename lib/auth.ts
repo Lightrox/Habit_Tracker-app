@@ -51,16 +51,22 @@ export const requireAuth = async (
   }
 
   // Verify user still exists in database
-  const dbUser = await prisma.user.findUnique({
-    where: { id: user.userId },
-    select: { id: true, email: true },
-  });
+  try {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.userId },
+      select: { id: true, email: true },
+    });
 
-  if (!dbUser) {
-    res.status(401).json({ error: 'User not found' });
+    if (!dbUser) {
+      res.status(401).json({ error: 'User not found' });
+      return null;
+    }
+
+    return { userId: dbUser.id, email: dbUser.email };
+  } catch (error) {
+    console.error('Database error in requireAuth:', error);
+    res.status(500).json({ error: 'Database error' });
     return null;
   }
-
-  return { userId: dbUser.id, email: dbUser.email };
 };
 
