@@ -3,6 +3,11 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install --include=dev",
   "framework": "vite",
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!api/).*)",
