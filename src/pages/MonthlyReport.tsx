@@ -18,9 +18,11 @@ const MonthlyReport: React.FC = () => {
 
   useEffect(() => {
     const fetchMonthData = async () => {
+      console.log('MonthlyReport: Fetching data for', year, month, 'refreshTrigger:', refreshTrigger);
       setLoading(true);
       const response = await api.getMonthLogs(year, month);
       if (response.data) {
+        console.log('MonthlyReport: Data received', response.data);
         const convertedLogs = response.data.logs.map(convertDbLog);
         setMonthLogs(convertedLogs);
         setHeatmapData(response.data.dailyHeatmapData);
@@ -32,6 +34,8 @@ const MonthlyReport: React.FC = () => {
           activities: item.intensity,
         }));
         setConsistencyTrend(trend);
+      } else {
+        console.error('MonthlyReport: No data or error', response.error);
       }
       setLoading(false);
     };

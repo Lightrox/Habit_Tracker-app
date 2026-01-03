@@ -46,12 +46,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     email: string,
     password: string
   ): Promise<{ error?: string }> => {
-    const response = await api.login(email, password);
-    if (response.data) {
-      setUser(response.data.user);
-      return {};
+    try {
+      const response = await api.login(email, password);
+      if (response.data) {
+        setUser(response.data.user);
+        return {};
+      }
+      // Check for 404 - means API routes aren't being served
+      if (response.error && response.error.includes('404')) {
+        return { 
+          error: 'API routes not found. Make sure you\'re using "npm run dev:vercel" (not "npm run dev")' 
+        };
+      }
+      return { error: response.error || 'Login failed' };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { error: error instanceof Error ? error.message : 'Login failed' };
     }
-    return { error: response.error || 'Login failed' };
   };
 
   const register = async (
@@ -87,3 +98,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

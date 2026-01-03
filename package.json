@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:vercel": "vercel dev",
     "build": "prisma generate && npx vite build",
     "preview": "vite preview",
     "prisma:generate": "prisma generate",

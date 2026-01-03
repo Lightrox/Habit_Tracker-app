@@ -29,12 +29,14 @@ const WeeklyAnalysis: React.FC = () => {
 
   useEffect(() => {
     const fetchWeekData = async () => {
-      setLoading(true);
       const year = selectedDate.getFullYear();
       const weekNumber = getWeekNumber(selectedDate);
+      console.log('WeeklyAnalysis: Fetching data for', year, 'week', weekNumber, 'refreshTrigger:', refreshTrigger);
+      setLoading(true);
       
       const response = await api.getWeekLogs(year, weekNumber);
       if (response.data) {
+        console.log('WeeklyAnalysis: Data received', response.data);
         const convertedLogs = response.data.logs.map(convertDbLog);
         setWeekLogs(convertedLogs);
         setSummary({
@@ -44,6 +46,8 @@ const WeeklyAnalysis: React.FC = () => {
           gymDays: response.data.summary.workoutDays,
           meditationDays: response.data.summary.meditationDays,
         });
+      } else {
+        console.error('WeeklyAnalysis: No data or error', response.error);
       }
       setLoading(false);
     };

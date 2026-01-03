@@ -116,11 +116,24 @@ const DailyTracking: React.FC = () => {
       return;
     }
 
-    // Ensure date is set correctly
-    const logToSave = { ...formData, date: selectedDate };
-    await saveLog(logToSave);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      // Ensure date is set correctly
+      const logToSave = { ...formData, date: selectedDate };
+      console.log('Saving log:', logToSave);
+      await saveLog(logToSave);
+      console.log('Log saved successfully');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      
+      // Force refresh the current date to get updated data
+      const refreshed = await getLog(selectedDate, true);
+      if (refreshed) {
+        setFormData(refreshed);
+      }
+    } catch (error) {
+      console.error('Error saving log:', error);
+      alert('Failed to save. Please try again.');
+    }
   };
 
   const updateDSA = (updates: Partial<DailyLog['dsa']>) => {
