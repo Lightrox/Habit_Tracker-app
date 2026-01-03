@@ -5,9 +5,13 @@ import { prisma } from './prisma';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 
-if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
-  throw new Error('JWT_SECRET environment variable is required');
-}
+// Don't throw at module load time - check when actually using it
+const getJwtSecret = () => {
+  if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+  return JWT_SECRET;
+};
 
 export interface JWTPayload {
   userId: string;
@@ -15,12 +19,14 @@ export interface JWTPayload {
 }
 
 export const generateToken = (payload: JWTPayload): string => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+  const secret = getJwtSecret();
+  return jwt.sign(payload, secret, { expiresIn: '7d' });
 };
 
 export const verifyToken = (token: string): JWTPayload => {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const secret = getJwtSecret();
+    return jwt.verify(token, secret) as JWTPayload;
   } catch (error) {
     throw new Error('Invalid token');
   }

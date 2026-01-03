@@ -1,5 +1,4 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { prisma } from '../lib/prisma';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
@@ -7,19 +6,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const hasDatabaseUrl = !!process.env.DATABASE_URL;
     const hasJwtSecret = !!process.env.JWT_SECRET;
     
-    // Test database connection
+    // Test database connection (without importing prisma to avoid crashes)
     let dbConnected = false;
     let dbError = null;
     
-    try {
-      await prisma.$connect();
-      await prisma.$queryRaw`SELECT 1`;
-      dbConnected = true;
-    } catch (error) {
-      dbError = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Database connection error:', error);
-    } finally {
-      await prisma.$disconnect().catch(() => {});
+    if (hasDatabaseUrl) {
+      try {
+        // Dynamic import to avoid crashes if Prisma isn't set up
+        const { prisma } = await import('../lib/prisma');
+        // Simple query to test connection
+        await prisma.$queryRaw`SELECT 1 as test`;
+        dbConnected = true;
+      } catch (error) {
+        dbError = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Database connection error:', error);
+        // Don't disconnect in serverless - let Prisma handle it
+      }
+    } else {
+      dbError = 'DATABASE_URL not set';
     }
 
     return res.status(200).json({
@@ -39,6 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({
       status: 'error',
       error: error instanceof Error ? error.message : 'Unknown error',
+      stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined,
     });
   }
 }

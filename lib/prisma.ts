@@ -4,21 +4,21 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL,
-      },
-    },
-  });
+// Create Prisma client with error handling
+function createPrismaClient() {
+  if (!process.env.DATABASE_URL) {
+    console.error('DATABASE_URL is not set');
+    // Still create client but it will fail on first query
+  }
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-} else {
-  // In production (serverless), reuse the same instance
-  globalForPrisma.prisma = prisma;
+  return new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
 }
+
+export const prisma =
+  globalForPrisma.prisma ?? createPrismaClient();
+
+// Always reuse the same instance in serverless
+globalForPrisma.prisma = prisma;
 
